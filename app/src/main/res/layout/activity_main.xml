@@ -9,12 +9,18 @@
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select a Photo"></Button>
+        android:text="Capture a Photo"></Button>
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select a Photo"
+        android:layout_toRightOf="@id/button1"/>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter unit:"
-        android:layout_toRightOf="@id/button1"
+        android:layout_toRightOf="@id/button2"
         android:id="@+id/unit"/>
 
     <ImageView
@@ -24,32 +30,33 @@
         android:layout_height="400dp"
         android:src="@drawable/ic_launcher_background"></ImageView>
 
+<!--    <Button-->
+<!--        android:id="@+id/btn"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/imageView1"-->
+<!--        android:text="Calculate" />-->
+
     <Button
-        android:id="@+id/btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="RESET"
         android:layout_below="@id/imageView1"
-        android:text="Calculate" />
+        android:id="@+id/reset"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CALCULATE THE DISTANCE"
+        android:layout_below="@id/reset"
+        android:id="@+id/calc"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_below="@id/btn"
+        android:layout_below="@id/calc"
         android:id="@+id/answer"
         android:visibility="gone"
         android:textSize="25sp"
         android:textAlignment="center"
         />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="RESET"
-        android:layout_below="@id/answer"
-        android:id="@+id/reset"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="CALC"
-        android:layout_below="@id/reset"
-        android:id="@+id/calc"/>
 
 </RelativeLayout>
