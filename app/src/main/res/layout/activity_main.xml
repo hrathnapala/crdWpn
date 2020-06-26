@@ -1,23 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
     android:id="@+id/relativeLayout">
-   <ImageView
-       android:layout_width="350dp"
-       android:layout_height="350dp"
-       android:src="@mipmap/ic_launcher"
-       android:layout_marginLeft="25dp"
-       android:layout_marginTop="25dp"
-       android:id="@+id/imageView"/>
-   <Button
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:text="Calculate distance"
-       android:id="@+id/btn"
-       android:layout_below="@id/imageView"/>
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select a Photo"></Button>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter unit:"
+        android:layout_toRightOf="@id/button1"
+        android:id="@+id/unit"/>
+
+    <ImageView
+        android:layout_below="@id/button1"
+        android:id="@+id/imageView1"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:src="@drawable/ic_launcher_background"></ImageView>
+
+    <Button
+        android:id="@+id/btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imageView1"
+        android:text="Calculate" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/btn"
+        android:id="@+id/answer"
+        android:visibility="gone"
+        android:textSize="25sp"
+        android:textAlignment="center"
+        />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="RESET"
+        android:layout_below="@id/answer"
+        android:id="@+id/reset"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CALC"
+        android:layout_below="@id/reset"
+        android:id="@+id/calc"/>
 
 </RelativeLayout>
