@@ -8,11 +8,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.drawable.VectorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,17 +31,18 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST = 1888;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
     ImageView imageView;
-    Button reset, calc,selectImage;
-    private final int   IMG_REQUEST = 1;
+    Button reset, calc, selectImage, done;
+    private final int IMG_REQUEST = 1;
     EditText editText;
     TextView textView;
-    float scale = 0;
+    float scale = 0, scalex = 0, scaley = 0;
     int x, y;
     ArrayList<Integer> coordinates;
     ArrayList<Double> calculation;
@@ -51,12 +57,16 @@ public class MainActivity extends AppCompatActivity {
         editText = findViewById(R.id.unit);
         selectImage = findViewById(R.id.button2);
         calc = findViewById(R.id.calc);
+        done = findViewById(R.id.done);
         imageView = findViewById(R.id.imageView1);
         final ImageView iv = new ImageView(MainActivity.this);
         coordinates = new ArrayList();
         calculation = new ArrayList();
         reset = findViewById(R.id.reset);
         final RelativeLayout rl = (RelativeLayout) findViewById(R.id.relativeLayout);
+        //imageView.setVisibility(View.INVISIBLE);
+        done.setVisibility(View.GONE);
+
 
         selectImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,31 +104,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        PhotoViewAttacher photoView = new PhotoViewAttacher(imageView);
+        final PhotoViewAttacher photoView = new PhotoViewAttacher(imageView);
         photoView.update();
         photoView.setOnScaleChangeListener(new PhotoViewAttacher.OnScaleChangeListener() {
             @Override
             public void onScaleChange(float scaleFactor, float focusX, float focusY) {
                 scale = scaleFactor;
-                System.out.println(scaleFactor);
+                scalex = focusX;
+                scaley = focusY;
+//                System.out.println(scaleFactor);
+                //System.out.println(focusX + " and" + focusY);
+
             }
         });
 
-        photoView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
+        photoView.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {
+
             @Override
-            public void onViewTap(View view, float x, float y) {
+            public void onPhotoTap(View view, float x, float y) {
+
+
                 iv.setVisibility(View.VISIBLE);
                 textView.setVisibility(View.GONE);
                 if (calculation.size() == 8) {
                     Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
                 } else {
-                    if ((int) scale == 0) {
-                        scale = 1;
-                    }
-                    calculation.add((double) x / scale);
-                    calculation.add((double) y / scale);
 
-                    System.out.println(x + " " + y);
+//                    System.out.println("X:" + x);
+//                    System.out.println("Y:" + y);
+                    if ((int) scale == 0 || (int) scalex == 0 || (int) scaley == 0) {
+                        scale = 1;
+                        scalex = 1;
+                        scaley = 1;
+                    }
+
+
+                    calculation.add((double) x);
+                    calculation.add((double) y);
 
 
                     Bitmap bm = BitmapFactory.decodeResource(getResources(),
@@ -127,9 +149,8 @@ public class MainActivity extends AppCompatActivity {
                     RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                             RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-                    params.leftMargin = (int) (x - 65);
-                    params.topMargin = (int) (y + 60);
-
+                    params.leftMargin = (int) (x * imageView.getWidth()/scale  - 60);
+                    params.topMargin = (int) (y * imageView.getHeight()/scale + 80);
 
                     if (iv.getParent() != null) {
                         ((ViewGroup) iv.getParent()).removeView(iv); // <- fix
@@ -138,73 +159,124 @@ public class MainActivity extends AppCompatActivity {
                     rl.addView(iv, params);
                 }
             }
+
+            @Override
+            public void onOutsidePhotoTap() {
+
+            }
+
+
         });
+
+
+//        photoView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
+//            @Override
+//            public void onViewTap(View view, float x, float y) {
+//
+//                iv.setVisibility(View.VISIBLE);
+//                textView.setVisibility(View.GONE);
+//                if (calculation.size() == 8) {
+//                    Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    if ((int) scale == 0 || (int) scalex == 0 || (int) scaley == 0) {
+//                        scale = 1;
+//                        scalex = 1;
+//                        scaley = 1;
+//                    }
+//                    calculation.add((double) x / scale);
+//                    calculation.add((double) y / scale);
+//                    System.out.println("X:" + (int) (x - 65));
+//                    System.out.println("Y:" + (int) (y + 60));
+//
+//                    System.out.println(x + " " + y);
+//                    System.out.println(x + " and " + y);
+//
+//
+//                    Bitmap bm = BitmapFactory.decodeResource(getResources(),
+//                            R.drawable.name);
+//                    iv.setImageBitmap(bm.createScaledBitmap(bm, 135, 135, true));
+//                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+//                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+//
+//                    params.leftMargin = (int) (x - 65);
+//                    params.topMargin = (int) (y + 85);
+//
+//
+//                    if (iv.getParent() != null) {
+//                        ((ViewGroup) iv.getParent()).removeView(iv); // <- fix
+//                    }
+//
+//                    rl.addView(iv, params);
+//                }
+//            }
+//        });
+
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                reset.setVisibility(View.VISIBLE);
+                calc.setVisibility(View.VISIBLE);
+                done.setVisibility(View.INVISIBLE);
+                textView.setVisibility(View.INVISIBLE);
+                iv.setVisibility(View.INVISIBLE);
+            }
+        });
+
 
     }
 
-    public void selectImage(){
+
+    public void selectImage() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,IMG_REQUEST);
+        startActivityForResult(intent, IMG_REQUEST);
     }
 
     public void calculate() {
         try {
-            double a = calculation.get(0);
-            double b = calculation.get(1);
-            double c = calculation.get(2);
-            double d = calculation.get(3);
-            double e = calculation.get(4);
-            double f = calculation.get(5);
-            double g = calculation.get(6);
-            double h = calculation.get(7);
+            if (editText.getText().toString().trim().equals("")) {
+                Toast.makeText(this, "Calibration value is empty", Toast.LENGTH_SHORT).show();
+            } else if (calculation.size() < 8) {
+                Toast.makeText(this, "Missing Coordinates", Toast.LENGTH_SHORT).show();
+            } else if (Double.parseDouble(editText.getText().toString()) < 1) {
+                Toast.makeText(this, "Wrong Calibration input", Toast.LENGTH_SHORT).show();
+            } else {
+                double a = calculation.get(0);
+                double b = calculation.get(1);
+                double c = calculation.get(2);
+                double d = calculation.get(3);
+                double e = calculation.get(4);
+                double f = calculation.get(5);
+                double g = calculation.get(6);
+                double h = calculation.get(7);
 
-            double answer1 = Math.sqrt(Math.pow((a - c), 2) + Math.pow((b - d), 2));
-            double answer2 = Math.sqrt(Math.pow((e - g), 2) + Math.pow((f - h), 2));
-            double answer3 = Double.parseDouble(editText.getText().toString());
-            double answer4 = ((answer3 / answer1) * answer2);
-            calculation.clear();
-            editText.setText("");
-            textView.setText("" + answer4);
-            textView.setVisibility(View.VISIBLE);
+                double answer1 = Math.sqrt(Math.pow((a - c), 2) + Math.pow((b - d), 2));
+                double answer2 = Math.sqrt(Math.pow((e - g), 2) + Math.pow((f - h), 2));
+                double answer3 = Double.parseDouble(editText.getText().toString());
+                double answer4 = ((answer3 / answer1) * answer2) * 10;
+                calculation.clear();
+                textView.setVisibility(View.VISIBLE);
 
-            double p1 = -5.995;
-            double p2 = 829.5;
-            double p3 = -5554;
-            double q1 = -1.69;
-            double q2 = -40.59;
+                double p1 = -5.995;
+                double p2 = 829.5;
+                double p3 = -5554;
+                double q1 = -1.69;
+                double q2 = -40.59;
+                reset.setVisibility(View.GONE);
+                calc.setVisibility(View.GONE);
 
-            double answer5 = (p1 * Math.pow(answer4,2) + p2 * answer4 + p3) / (Math.pow(answer4,2) - q1 * answer4 + q2);
-            editText.setText(""+answer5);
+                double answer5 = (p1 * Math.pow(answer4, 2) + p2 * answer4 + p3) / (Math.pow(answer4, 2) - q1 * answer4 + q2);
+                textView.setText("Length: " + String.format("%.2f", answer4) + " mm" + "\n" + "Angle: " + String.format("%.2f", answer5) + "°");
+                done.setVisibility(View.VISIBLE);
+            }
 
         } catch (Exception e) {
-            Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Wrong Input", Toast.LENGTH_SHORT).show();
         }
 
     }
 
-    public double getScreenDistance(double x1, double y1, double x2, double y2) {
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double xDist = Math.pow(Math.abs(x1 - x2) / dm.xdpi, 2);
-        double yDist = Math.pow(Math.abs(y1 - y2) / dm.ydpi, 2);
-        return Math.sqrt(xDist + yDist);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        int x = (int) event.getX();
-        int y = (int) event.getY();
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE:
-            case MotionEvent.ACTION_UP:
-        }
-
-        return false;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -214,24 +286,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
-        if(requestCode == IMG_REQUEST && resultCode == RESULT_OK && data != null){
+        if (requestCode == IMG_REQUEST && resultCode == RESULT_OK && data != null) {
             Uri path = data.getData();
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),path);
-                Bitmap resized = Bitmap.createScaledBitmap(bitmap,330, 330, true);
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
+                Bitmap resized = Bitmap.createScaledBitmap(bitmap, 330, 330, true);
                 imageView.setImageBitmap(resized);
                 imageView.setVisibility(View.VISIBLE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }else {
+        } else {
             Bitmap photo = (Bitmap) data.getExtras().get("data");
             imageView.setImageBitmap(photo);
             imageView.setVisibility(View.VISIBLE);
         }
 
 
-
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+
 }

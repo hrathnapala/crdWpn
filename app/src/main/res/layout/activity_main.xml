@@ -3,32 +3,50 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:id="@+id/relativeLayout">
+    android:id="@+id/relativeLayout"
+    android:background="@drawable/background"
+    >
 
     <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Capture a Photo"></Button>
+        android:text="Capture a Photo"
+        android:background="@drawable/mybutton"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"></Button>
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Select a Photo"
-        android:layout_toRightOf="@id/button1"/>
+        android:layout_toRightOf="@id/button1"
+        android:background="@drawable/mybutton"
+        android:layout_marginLeft="5dp"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"/>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter unit:"
         android:layout_toRightOf="@id/button2"
-        android:id="@+id/unit"/>
+        android:id="@+id/unit"
+        android:background="@drawable/text"
+        android:layout_marginTop="11dp"
+        android:padding="5dp"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="5dp"/>
 
     <ImageView
         android:layout_below="@id/button1"
         android:id="@+id/imageView1"
         android:layout_width="match_parent"
         android:layout_height="400dp"
-        android:src="@drawable/ic_launcher_background"></ImageView>
+        android:layout_marginTop="5dp"
+        android:src="@drawable/ic_launcher_background"
+        android:scaleType="fitXY"
+        ></ImageView>
 
 <!--    <Button-->
 <!--        android:id="@+id/btn"-->
@@ -42,21 +60,45 @@
         android:layout_height="wrap_content"
         android:text="RESET"
         android:layout_below="@id/imageView1"
-        android:id="@+id/reset"/>
+        android:id="@+id/reset"
+        android:background="@drawable/mybutton"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="CALCULATE THE DISTANCE"
+        android:text="CALCULATE THE ANGLE AND DISTANCE"
         android:layout_below="@id/reset"
-        android:id="@+id/calc"/>
+        android:id="@+id/calc"
+        android:background="@drawable/mybutton"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="65dp"
         android:layout_below="@id/calc"
         android:id="@+id/answer"
         android:visibility="gone"
         android:textSize="25sp"
         android:textAlignment="center"
+        android:background="@drawable/text"
+        android:padding="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+
         />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DONE"
+        android:layout_below="@id/answer"
+        android:id="@+id/done"
+        android:background="@drawable/mybutton"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
 
 </RelativeLayout>
