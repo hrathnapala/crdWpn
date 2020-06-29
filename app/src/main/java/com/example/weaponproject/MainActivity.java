@@ -28,11 +28,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.chrisbanes.photoview.OnPhotoTapListener;
+import com.github.chrisbanes.photoview.OnScaleChangedListener;
+import com.github.chrisbanes.photoview.OnViewTapListener;
+import com.github.chrisbanes.photoview.PhotoView;
+import com.viven.imagezoom.ImageZoomHelper;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
-import uk.co.senab.photoview.PhotoView;
-import uk.co.senab.photoview.PhotoViewAttacher;
+//import uk.co.senab.photoview.PhotoView;
+//import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST = 1888;
@@ -48,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Double> calculation;
     double i = 0;
     Bitmap bitmap;
+    PhotoView photoView;
+    PointF pointA = new PointF(100, 600);
+    PointF pointB = new PointF(500, 400);
+
+    private LineView mLineView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +69,20 @@ public class MainActivity extends AppCompatActivity {
         selectImage = findViewById(R.id.button2);
         calc = findViewById(R.id.calc);
         done = findViewById(R.id.done);
-        imageView = findViewById(R.id.imageView1);
+
+        mLineView = (LineView) findViewById(R.id.lineView);
+        mLineView.setVisibility(View.GONE);
+
+
+        //imageView = findViewById(R.id.imageView1);
         final ImageView iv = new ImageView(MainActivity.this);
         coordinates = new ArrayList();
         calculation = new ArrayList();
         reset = findViewById(R.id.reset);
+
         final RelativeLayout rl = (RelativeLayout) findViewById(R.id.relativeLayout);
         //imageView.setVisibility(View.INVISIBLE);
+
         done.setVisibility(View.GONE);
 
 
@@ -78,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //imageView.setVisibility(View.INVISIBLE);
+                mLineView.setVisibility(View.GONE);
                 editText.setText("");
                 calculation.clear();
                 coordinates.clear();
@@ -104,53 +123,91 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final PhotoViewAttacher photoView = new PhotoViewAttacher(imageView);
-        photoView.update();
-        photoView.setOnScaleChangeListener(new PhotoViewAttacher.OnScaleChangeListener() {
+        photoView = (PhotoView) findViewById(R.id.photo_view);
+//        photoView.setVisibility(View.INVISIBLE);
+//        photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
+//
+//            @Override
+//            public void onPhotoTap(ImageView view, float x, float y) {
+//                photoView.setOnViewTapListener(new OnViewTapListener() {
+//                    @Override
+//                    public void onViewTap(View view, float x, float y) {
+//                        if (calculation.size() == 8) {
+//                            Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+//                        } else {
+//                            Bitmap bm = BitmapFactory.decodeResource(getResources(),
+//                                    R.drawable.name);
+//                            iv.setImageBitmap(bm.createScaledBitmap(bm, 135, 135, true));
+//                            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+//                                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+//
+//                            params.leftMargin = (int) (x - 65);
+//                            params.topMargin = (int) (y + 85);
+//
+//
+//                            if (iv.getParent() != null) {
+//                                ((ViewGroup) iv.getParent()).removeView(iv); // <- fix
+//                            }
+//
+//                            rl.addView(iv, params);
+//                        }
+//                    }
+//                });
+//                System.out.println(x);
+//                if (calculation.size() == 8) {
+//                    Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    calculation.add((double) x);
+//                    calculation.add((double) y);
+//                }
+//            }
+//        });
+
+        photoView.setOnViewTapListener(new OnViewTapListener() {
+
             @Override
-            public void onScaleChange(float scaleFactor, float focusX, float focusY) {
-                scale = scaleFactor;
-                scalex = focusX;
-                scaley = focusY;
-//                System.out.println(scaleFactor);
-                //System.out.println(focusX + " and" + focusY);
-
-            }
-        });
-
-        photoView.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {
-
-            @Override
-            public void onPhotoTap(View view, float x, float y) {
-
-
+            public void onViewTap(View view, float x, float y) {
                 iv.setVisibility(View.VISIBLE);
-                textView.setVisibility(View.GONE);
+                photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
+                    @Override
+                    public void onPhotoTap(ImageView view, float x, float y) {
+                        if (calculation.size() == 8) {
+                            Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+                        } else {
+                            calculation.add((double) x);
+                            calculation.add((double) y);
+                        }
+                    }
+                });
                 if (calculation.size() == 8) {
                     Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
                 } else {
-
-//                    System.out.println("X:" + x);
-//                    System.out.println("Y:" + y);
-                    if ((int) scale == 0 || (int) scalex == 0 || (int) scaley == 0) {
-                        scale = 1;
-                        scalex = 1;
-                        scaley = 1;
-                    }
-
-
-                    calculation.add((double) x);
-                    calculation.add((double) y);
-
-
                     Bitmap bm = BitmapFactory.decodeResource(getResources(),
                             R.drawable.name);
                     iv.setImageBitmap(bm.createScaledBitmap(bm, 135, 135, true));
                     RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                             RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-                    params.leftMargin = (int) (x * imageView.getWidth()/scale  - 60);
-                    params.topMargin = (int) (y * imageView.getHeight()/scale + 80);
+                    params.leftMargin = (int) (x - 65);
+                    params.topMargin = (int) (y + 85);
+
+
+                    coordinates.add((int) (x));
+                    coordinates.add((int) (y));
+
+                    if (coordinates.size() == 4) {
+                        mLineView.setVisibility(View.VISIBLE);
+                        mLineView.setPointA(new PointF(coordinates.get(0), coordinates.get(1)));
+                        mLineView.setPointB(new PointF(coordinates.get(2), coordinates.get(3)));
+                        mLineView.draw();
+
+                    } else if (coordinates.size() == 8) {
+                        //mLineView.setVisibility(View.VISIBLE);
+                        mLineView.setPointC(new PointF(coordinates.get(4), coordinates.get(5)));
+                        mLineView.setPointD(new PointF(coordinates.get(6), coordinates.get(7)));
+                        mLineView.draw();
+
+                    }
 
                     if (iv.getParent() != null) {
                         ((ViewGroup) iv.getParent()).removeView(iv); // <- fix
@@ -158,15 +215,74 @@ public class MainActivity extends AppCompatActivity {
 
                     rl.addView(iv, params);
                 }
-            }
-
-            @Override
-            public void onOutsidePhotoTap() {
 
             }
-
 
         });
+
+
+//        final PhotoViewAttacher photoView = new PhotoViewAttacher(imageView);
+//        photoView.update();
+//        photoView.setOnScaleChangeListener(new PhotoViewAttacher.OnScaleChangeListener() {
+//            @Override
+//            public void onScaleChange(float scaleFactor, float focusX, float focusY) {
+//                scale = scaleFactor;
+//                scalex = focusX;
+//                scaley = focusY;
+//               System.out.println(scaleFactor);
+//                System.out.println(focusX + " and" + focusY);
+//
+//            }
+//        });
+
+//        photoView.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {
+//
+//            @Override
+//            public void onPhotoTap(View view, float x, float y) {
+//
+//                iv.setVisibility(View.VISIBLE);
+//                textView.setVisibility(View.GONE);
+//                if (calculation.size() == 8) {
+//                    Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+//                } else {
+//
+////                    System.out.println("X:" + x);
+////                    System.out.println("Y:" + y);
+//                    if ((int) scale == 0 || (int) scalex == 0 || (int) scaley == 0) {
+//                        scale = 1;
+//                        scalex = 1;
+//                        scaley = 1;
+//                    }
+//
+//
+//                    calculation.add((double) x);
+//                    calculation.add((double) y);
+//
+//
+//                    Bitmap bm = BitmapFactory.decodeResource(getResources(),
+//                            R.drawable.name);
+//                    iv.setImageBitmap(bm.createScaledBitmap(bm, 135, 135, true));
+//                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+//                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+//
+//                    params.leftMargin = (int) (x * imageView.getWidth() / scale - 60);
+//                    params.topMargin = (int) (y * imageView.getHeight() / scale + 80);
+//
+//                    if (iv.getParent() != null) {
+//                        ((ViewGroup) iv.getParent()).removeView(iv); // <- fix
+//                    }
+//
+//                    rl.addView(iv, params);
+//                }
+//            }
+//
+//            @Override
+//            public void onOutsidePhotoTap() {
+//
+//            }
+//
+//
+//        });
 
 
 //        photoView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
@@ -185,11 +301,11 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                    calculation.add((double) x / scale);
 //                    calculation.add((double) y / scale);
-//                    System.out.println("X:" + (int) (x - 65));
-//                    System.out.println("Y:" + (int) (y + 60));
-//
-//                    System.out.println(x + " " + y);
-//                    System.out.println(x + " and " + y);
+////                    System.out.println("X:" + (int) (x - 65));
+////                    System.out.println("Y:" + (int) (y + 60));
+////
+////                    System.out.println(x + " " + y);
+////                    System.out.println(x + " and " + y);
 //
 //
 //                    Bitmap bm = BitmapFactory.decodeResource(getResources(),
@@ -210,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
 //                }
 //            }
 //        });
-
+//
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -219,9 +335,10 @@ public class MainActivity extends AppCompatActivity {
                 done.setVisibility(View.INVISIBLE);
                 textView.setVisibility(View.INVISIBLE);
                 iv.setVisibility(View.INVISIBLE);
+                coordinates.clear();
+                mLineView.setVisibility(View.GONE);
             }
         });
-
 
     }
 
@@ -291,15 +408,17 @@ public class MainActivity extends AppCompatActivity {
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
                 Bitmap resized = Bitmap.createScaledBitmap(bitmap, 330, 330, true);
-                imageView.setImageBitmap(resized);
-                imageView.setVisibility(View.VISIBLE);
+                photoView.setImageBitmap(resized);
+                photoView.setVisibility(View.VISIBLE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             Bitmap photo = (Bitmap) data.getExtras().get("data");
-            imageView.setImageBitmap(photo);
-            imageView.setVisibility(View.VISIBLE);
+            Bitmap resized = Bitmap.createScaledBitmap(photo, 330, 330, true);
+            photoView.setImageBitmap(resized);
+            photoView.setVisibility(View.VISIBLE);
+
         }
 
 
