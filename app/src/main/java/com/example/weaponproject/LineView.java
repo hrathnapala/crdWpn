@@ -7,11 +7,12 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 
 public class LineView extends View {
-    private Paint paint = new Paint();
+    private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private PointF pointA, pointB, pointC, pointD;
 
     public LineView(Context context) {
@@ -29,7 +30,7 @@ public class LineView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         paint.setColor(Color.RED);
-        paint.setStrokeWidth(10);
+        paint.setStrokeWidth(5);
         canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, paint);
         if (pointC != null && pointD != null) {
             canvas.drawLine(pointC.x, pointC.y, pointD.x, pointD.y, paint);
