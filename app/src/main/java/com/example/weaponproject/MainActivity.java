@@ -8,7 +8,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,9 +20,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.VectorDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -36,6 +40,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Magnifier;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +62,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+
     private static final int CAMERA_REQUEST = 1888;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
     ImageView imageView;
@@ -64,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private final int IMG_REQUEST = 1;
     EditText editText;
     TextView textView;
-    float scale = 0, scalex = 0, scaley = 0;
+    float scale = 1, scalex, scaley;
     int x, y;
     ArrayList<Integer> coordinates;
     ArrayList<Double> calculation;
@@ -75,9 +81,11 @@ public class MainActivity extends AppCompatActivity {
     PointF pointB = new PointF(500, 400);
 
 
+
     private String currentPhotoPath;
 
     private static final int PERMISSION_CODE = 1001;
+
 
 
 
@@ -86,12 +94,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         textView = findViewById(R.id.answer);
         editText = findViewById(R.id.unit);
         selectImage = findViewById(R.id.button2);
         //calc = findViewById(R.id.calc);
         done = findViewById(R.id.done);
+
 
 
 
@@ -184,6 +192,55 @@ public class MainActivity extends AppCompatActivity {
 
         photoView = (PhotoView) findViewById(R.id.photo_view);
 
+
+        final Magnifier magnifier = new Magnifier(photoView);
+       // magnifier.show(500, 500 / 2);
+        photoView.setOnTouchListener(new View.OnTouchListener() {
+            final int[] viewPosition = new int[2];
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getActionMasked()) {
+
+                    case MotionEvent.ACTION_DOWN:
+                        // Fall through.
+                    case MotionEvent.ACTION_MOVE: {
+
+                        v.getLocationOnScreen(viewPosition);
+                        magnifier.show(event.getRawX() - viewPosition[0],
+                                event.getRawY() - viewPosition[1]);
+                        break;
+                    }
+                    case MotionEvent.ACTION_CANCEL:
+                        // Fall through.
+                    case MotionEvent.ACTION_UP: {
+                        magnifier.dismiss();
+                        coordinates.add((int)event.getX());
+                        coordinates.add((int)event.getY());
+
+                        Paint mPaint;
+                        final Bitmap bitmap = ((BitmapDrawable)photoView.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
+                        Canvas canvas = new Canvas(bitmap);
+                        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                        mPaint.setAntiAlias(true);
+                        mPaint.setDither(true);
+                        mPaint.setColor(Color.BLUE);
+                        mPaint.setStyle(Paint.Style.STROKE);
+                        mPaint.setStrokeJoin(Paint.Join.ROUND);
+                        mPaint.setStrokeCap(Paint.Cap.ROUND);
+                        mPaint.setStrokeWidth(5);
+                        if(coordinates.size() == 4) {
+                            canvas.drawLine(coordinates.get(0), coordinates.get(1)/2.0f, coordinates.get(2), coordinates.get(3)/2.0f, mPaint);
+                            photoView.setImageBitmap(bitmap);
+                            photoView.invalidate();
+                            photoView.requestLayout();
+                        }
+
+                    }
+                }
+                return true;
+            }
+        });
+
 //        photoView.setVisibility(View.INVISIBLE);
 //        photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
 //
@@ -224,103 +281,151 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
 
+
+
         photoView.setOnViewTapListener(new OnViewTapListener() {
 
             @Override
             public void onViewTap(View view, float x, float y) {
-                iv.setVisibility(View.VISIBLE);
 
-                photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
-                    @Override
-                    public void onPhotoTap(ImageView view, float x, float y) {
-                        if (calculation.size() == 8) {
-                            Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
-                        } else {
-                            calculation.add((double) x);
-                            calculation.add((double) y);
-                        }
-                    }
-                });
-                if (calculation.size() == 8) {
-                    Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+
+
+
+                if (editText.getText().toString().trim().equals("")) {
+                    Toast.makeText(MainActivity.this, "Calibration Value is Empty", Toast.LENGTH_SHORT).show();
+                    calculation.clear();
+                    coordinates.clear();
                 } else {
-                    Bitmap bm = BitmapFactory.decodeResource(getResources(),
-                            R.drawable.name);
-                    iv.setImageBitmap(bm.createScaledBitmap(bm, 135, 135, true));
-                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    iv.setVisibility(View.VISIBLE);
+                    photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
+                        @Override
+                        public void onPhotoTap(ImageView view, float x, float y) {
+                            if (calculation.size() == 8) {
+                                Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+                            } else {
+                                calculation.add((double) x);
+                                calculation.add((double) y);
+                            }
+                        }
+                    });
+                    if (coordinates.size() == 8) {
+                        Toast.makeText(MainActivity.this, "Sorry", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Bitmap bm = BitmapFactory.decodeResource(getResources(),
+                                R.drawable.name1);
+                        iv.setImageBitmap(bm.createScaledBitmap(bm, 135, 135, true));
+                        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-                    params.leftMargin = (int) (x - 65);
-                    params.topMargin = (int) (y - 65); // + 45
+                        params.leftMargin = (int) (x - 65);
+                        params.topMargin = (int) (y - 120); // + 45
+
+//                        coordinates.add((int)((x)-20));
+//                        coordinates.add((int) (y));
+
+                        coordinates.add((int) (x-65));
+                        coordinates.add((int) (y-120));
 
 
-                    coordinates.add((int) (x));
-                    coordinates.add((int) (y));
+
+                        switch (coordinates.size()) {
+                            case 2:
+                                Toast.makeText(MainActivity.this, "1st point selected", Toast.LENGTH_SHORT).show();
+                                break;
+                            case 4:
+                                Toast.makeText(MainActivity.this, "2nd point selected", Toast.LENGTH_SHORT).show();
+                                break;
+                            case 6:
+                                System.out.println(coordinates.get(5));
+                                Toast.makeText(MainActivity.this, "3rd point selected", Toast.LENGTH_SHORT).show();
+                                break;
+                            case 8:
+                                Toast.makeText(MainActivity.this, "4th point selected", Toast.LENGTH_SHORT).show();
+                                break;
+
+                        }
 
 
-                    switch (coordinates.size()){
-                        case 2:
-                            Toast.makeText(MainActivity.this, "1st point selected", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 4:
-                            Toast.makeText(MainActivity.this, "2nd point selected", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 6:
-                            Toast.makeText(MainActivity.this, "3rd point selected", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 8:
-                            Toast.makeText(MainActivity.this, "4th point selected", Toast.LENGTH_SHORT).show();
-                            break;
-
-                    }
-
-
-                    if (coordinates.size() == 4) {
+                        if (coordinates.size() == 4) {
+//                        LineView  mLineView = findViewById(R.id.lineView);
 //                        mLineView.setVisibility(View.VISIBLE);
 //                        mLineView.setPointA(new PointF(coordinates.get(0), coordinates.get(1)));
 //                        mLineView.setPointB(new PointF(coordinates.get(2), coordinates.get(3)));
 //                        mLineView.draw();
 
+//                            DrawView drawView = new DrawView(MainActivity.this);
+//                            RelativeLayout relativeLayout = findViewById(R.id.relativeLaoyout1);
+//                            relativeLayout.addView(drawView);
+//                            photoView.setImageBitmap(bitmap);
+//                            System.out.println("hello");
 
-                    } else if (coordinates.size() == 8) {
+                            Paint mPaint;
+                            final Bitmap bitmap = ((BitmapDrawable)photoView.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
+                            Canvas canvas = new Canvas(bitmap);
+                            mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                            mPaint.setAntiAlias(true);
+                            mPaint.setDither(true);
+                            mPaint.setColor(Color.BLUE);
+                            mPaint.setStyle(Paint.Style.STROKE);
+                            mPaint.setStrokeJoin(Paint.Join.ROUND);
+                            mPaint.setStrokeCap(Paint.Cap.ROUND);
+                            mPaint.setStrokeWidth(5);
+
+
+//                            PointF pointA = new PointF(coordinates.get(0), coordinates.get(1));
+//                            PointF pointB = new PointF(coordinates.get(1), coordinates.get(2));
+//                            canvas.drawLine(pointA.x, pointA.y, pointB.x, pointA.y, mPaint);
+                            //canvas.drawLine(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), mPaint);
+                            canvas.drawLine(coordinates.get(0), coordinates.get(1) / 2.45f, coordinates.get(2), coordinates.get(3) / 2.45f, mPaint);
+                            photoView.setImageBitmap(bitmap);
+                            photoView.invalidate();
+                            photoView.requestLayout();
+                        } else if (coordinates.size() == 8) {
+                        final LineView  mLineView = findViewById(R.id.lineView);
 //                        mLineView.setVisibility(View.VISIBLE);
 //                        mLineView.setPointC(new PointF(coordinates.get(4), coordinates.get(5)));
 //                        mLineView.setPointD(new PointF(coordinates.get(6), coordinates.get(7)));
 //                        mLineView.draw();
 
-                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                        alertDialog.setTitle("Alert");
-                        alertDialog.setMessage("Points saved successfully,Do you want to calculate the Distance and Angle");
-                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        calculate();
-                                        iv.setVisibility(View.GONE);
-                                    }
-                                });
-                        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "No",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
 
-                                        editText.setText("");
-                                        calculation.clear();
-                                        coordinates.clear();
-                                        textView.setVisibility(View.GONE);
-                                        iv.setVisibility(View.GONE);
-                                        Toast.makeText(MainActivity.this, "Coordinated deleted successfully", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                        alertDialog.show();
 
+
+                            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                            alertDialog.setTitle("Alert");
+                            alertDialog.setMessage("Points saved successfully,Do you want to calculate the Distance and Angle");
+                            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            calculate();
+                                            iv.setVisibility(View.GONE);
+                                            mLineView.setVisibility(View.GONE);
+                                        }
+                                    });
+                            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "No",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                            editText.setText("");
+                                            calculation.clear();
+                                            coordinates.clear();
+                                            textView.setVisibility(View.GONE);
+                                            mLineView.setVisibility(View.GONE);
+                                            iv.setVisibility(View.GONE);
+                                            Toast.makeText(MainActivity.this, "Coordinated deleted successfully", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                            alertDialog.show();
+
+                        }
+
+                        if (iv.getParent() != null) {
+                            ((ViewGroup) iv.getParent()).removeView(iv); // <- fix
+                        }
+
+                        rl.addView(iv, params);
                     }
 
-                    if (iv.getParent() != null) {
-                        ((ViewGroup) iv.getParent()).removeView(iv); // <- fix
-                    }
-
-                    rl.addView(iv, params);
                 }
-
             }
 
         });
@@ -438,11 +543,12 @@ public class MainActivity extends AppCompatActivity {
                 //reset.setVisibility(View.VISIBLE);
                 //calc.setVisibility(View.VISIBLE);
                 editText.setText("");
-                photoView.setImageResource(R.drawable.ic_launcher_background);
+                photoView.setVisibility(View.INVISIBLE);
                 done.setVisibility(View.INVISIBLE);
                 textView.setVisibility(View.INVISIBLE);
                 iv.setVisibility(View.INVISIBLE);
                 coordinates.clear();
+                calculation.clear();
                 //mLineView.setVisibility(View.GONE);
             }
         });
@@ -458,6 +564,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void calculate() {
+
         try {
             if (editText.getText().toString().trim().equals("")) {
                 Toast.makeText(this, "Calibration value is empty", Toast.LENGTH_SHORT).show();
@@ -536,18 +643,137 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
         if (requestCode == 2 && resultCode == RESULT_OK) {
-            Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+            bitmap = BitmapFactory.decodeFile(currentPhotoPath);
             PhotoView photoView = findViewById(R.id.photo_view);
             photoView.setVisibility(View.VISIBLE);
             photoView.setImageBitmap(bitmap);
         } else if(requestCode == 1 && resultCode == RESULT_OK) {
             photoView.setVisibility(View.VISIBLE);
-            photoView.setImageURI(data.getData());
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), data.getData());
+                photoView.setImageBitmap(bitmap);
+
+               // setContentView(drawView);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //photoView.setImageURI(data.getData());
         }
 
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    public class DrawView extends View{
+        private Canvas mCanvas;
+        private Path mPath;
+        public Paint mPaint;
+        private ArrayList<Path> paths = new ArrayList<Path>();
+        Bitmap bmp;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
 
 
+
+        public DrawView(Context context) {
+            super(context);
+            setFocusable(true);
+            setFocusableInTouchMode(true);
+            //this.setOnTouchListener(this);
+            bmp = bitmap;
+            mPaint = new Paint();
+            mPaint.setAntiAlias(true);
+            mPaint.setDither(true);
+            mPaint.setColor(Color.BLUE);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeJoin(Paint.Join.ROUND);
+            mPaint.setStrokeCap(Paint.Cap.ROUND);
+            mPaint.setStrokeWidth(6);
+            mCanvas = new Canvas();
+            mPath = new Path();
+            paths.add(mPath);
+            ((Activity) getContext()).getWindowManager()
+                    .getDefaultDisplay()
+                    .getMetrics(displayMetrics);
+
+
+        }
+
+
+
+        @Override
+        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+            super.onSizeChanged(w, h, oldw, oldh);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+
+            canvas.drawBitmap(bmp, 0, 0, null);
+//            for (Path p : paths) {
+//                canvas.drawPath(p, mPaint);
+//            }
+            canvas.drawLine(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), mPaint);
+            bitmap = bmp;
+
+
+        }
+
+//        private float mX, mY;
+//        private static final float TOUCH_TOLERANCE = 0;
+//
+//
+//        private void touch_start(float x, float y) {
+//            mPath.reset();
+//            mPath.moveTo(x, y);
+//            mX = x;
+//            mY = y;
+//
+//        }
+//
+//        private void touch_move(float x, float y) {
+//            float dx = Math.abs(x - mX);
+//            float dy = Math.abs(y - mY);
+//            if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+//                mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
+//                mX = x;
+//                mY = y;
+//            }
+//
+//        }
+//
+//        private void touch_up() {
+//            mPath.lineTo(mX, mY);
+//            // commit the path to our offscreen
+//            mCanvas.drawPath(mPath, mPaint);
+//            // kill this so we don't double draw
+//            mPath = new Path();
+//            paths.add(mPath);
+//        }
+//
+//        @Override
+//        public boolean onTouch(View arg0, MotionEvent event) {
+//            float x = event.getX();
+//            float y = event.getY();
+//
+//            switch (event.getAction()) {
+//
+//                case MotionEvent.ACTION_DOWN:
+//                    touch_start(x, y);
+//                    invalidate();
+//                    break;
+//                case MotionEvent.ACTION_MOVE:
+//                    touch_move(x, y);
+//                    invalidate();
+//                    break;
+//                case MotionEvent.ACTION_UP:
+//                    touch_up();
+//                    invalidate();
+//                    break;
+//            }
+//            return true;
+//        }
+
+
+    }
 }

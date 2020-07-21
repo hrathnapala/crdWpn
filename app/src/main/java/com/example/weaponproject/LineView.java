@@ -1,15 +1,19 @@
 package com.example.weaponproject;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
+
+import com.github.chrisbanes.photoview.PhotoView;
 
 public class LineView extends View {
     private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -29,8 +33,10 @@ public class LineView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        paint.setColor(Color.RED);
-        paint.setStrokeWidth(5);
+
+
+        paint.setColor(Color.BLUE);
+        paint.setStrokeWidth(7);
         canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, paint);
         if (pointC != null && pointD != null) {
             canvas.drawLine(pointC.x, pointC.y, pointD.x, pointD.y, paint);
@@ -39,6 +45,7 @@ public class LineView extends View {
         }
 
         super.onDraw(canvas);
+
     }
 
     public void setPointA(PointF point) {

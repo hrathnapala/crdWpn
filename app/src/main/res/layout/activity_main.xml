@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/relativeLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/background"
+    android:background="@drawable/bc3"
     android:orientation="vertical"
     >
 
@@ -12,11 +11,19 @@
         android:id="@+id/photo_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
         android:scaleType="fitXY"
         android:visibility="visible"
-        android:layout_marginBottom="100dp"
         android:src="@drawable/ic_launcher_background"
         />
+
+
+    <com.example.weaponproject.LineView
+        android:id="@+id/lineView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:layout_marginBottom="300dp"/>
 
     <!--    <Button-->
     <!--        android:id="@+id/reset"-->
@@ -53,8 +60,8 @@
         android:layout_below="@+id/photo_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="-80dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="-250dp"
         android:background="@drawable/mybutton"
         android:padding="5dp"
         android:text="Capture a Photo"
@@ -64,11 +71,11 @@
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/photo_view"
+
         android:layout_marginLeft="5dp"
         android:layout_toRightOf="@id/button1"
         android:background="@drawable/mybutton"
-        android:layout_marginTop="-80dp"
+
         android:padding="5dp"
         android:text="Select a Photo" />
 
@@ -78,7 +85,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/answer"
         android:layout_marginLeft="5dp"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="20dp"
         android:layout_marginRight="5dp"
         android:background="@drawable/mybutton"
         android:text="DONE" />
@@ -93,28 +100,29 @@
 
     <EditText
         android:id="@+id/unit"
-        android:layout_width="match_parent"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="3dp"
 
         android:layout_marginRight="5dp"
         android:layout_toRightOf="@id/button2"
         android:background="@drawable/text"
-        android:hint="Enter unit:"
+        android:hint="units:(mm)"
         android:padding="5dp"
         android:layout_below="@+id/photo_view"
-        android:layout_marginTop="-72dp"/>
+        android:layout_marginTop="-242dp"/>
 
     <TextView
         android:id="@+id/answer"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginTop="250dp"
+        android:layout_marginTop="-180dp"
         android:layout_marginRight="5dp"
         android:background="@drawable/text"
-        android:padding="5dp"
+        android:padding="3dp"
         android:textAlignment="center"
+        android:layout_below="@id/photo_view"
         android:textSize="25sp"
         android:visibility="gone"
 
